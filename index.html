@@ -3,61 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLuv Pay Test</title>
+    <title>CampusLuv Step 10</title>
+    <!-- Load Pi SDK -->
     <script src="https://sdk.minepi.com"></script>
 </head>
-<body style="text-align: center; padding-top: 50px; font-family: sans-serif;">
+<body style="text-align: center; padding-top: 50px; font-family: sans-serif; background-color: #f4f4f9;">
 
     <h1>CampusLuv Step 10</h1>
-    <p id="status">Please wait, connecting to Pi...</p>
     
-    <button id="pay-button" style="display:none; padding: 15px 30px; font-size: 18px; background: #673ab7; color: white; border: none; border-radius: 8px;">
+    <!-- This box will tell us if it's working -->
+    <div id="status-box" style="margin: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; background: white;">
+        <p id="status-text">Connecting to Pi Network...</p>
+    </div>
+
+    <button id="pay-button" style="display:none; padding: 15px 30px; font-size: 18px; background: #673ab7; color: white; border: none; border-radius: 8px; cursor: pointer;">
         Pay 1 Test-Pi
     </button>
 
     <script>
         const Pi = window.Pi;
+        // IMPORTANT: Ensure sandbox is true for testing
         Pi.init({ version: "2.0", sandbox: true });
 
-        // Step A: Authenticate the user first
-        async function auth() {
+        async function startApp() {
             try {
+                const statusText = document.getElementById('status-text');
+                const payButton = document.getElementById('pay-button');
+
+                // Step 1: Authenticate (Log in)
                 const scopes = ['payments'];
                 const user = await Pi.authenticate(scopes, (payment) => {
-                    console.log("Payment in progress...", payment);
+                    console.log("Payment callback:", payment);
                 });
-                document.getElementById('status').innerText = "Hello " + user.user.username + "! Ready to test.";
-                document.getElementById('pay-button').style.display = "inline-block";
+
+                // Step 2: If successful, show the button
+                statusText.innerText = "Welcome, " + user.user.username + "! Tap the button below to complete Step 10.";
+                statusText.style.color = "green";
+                payButton.style.display = "inline-block";
+
+                // Step 3: Handle the Payment
+                payButton.onclick = function() {
+                    statusText.innerText = "Opening Wallet...";
+                    
+                    Pi.createPayment({
+                        amount: 1,
+                        memo: "Final Step 10 Test",
+                        metadata: { developer_approved: true }
+                    }, {
+                        onReadyForServerApproval: (paymentId) => {
+                            statusText.innerText = "Payment submitted! Please wait...";
+                            // In sandbox, this is often auto-handled for Step 10
+                        },
+                        onReadyForServerCompletion: (paymentId, txid) => {
+                            statusText.innerText = "Success! Step 10 should turn green now.";
+                            alert("Transaction Complete! ID: " + txid);
+                        },
+                        onCancel: (paymentId) => {
+                            statusText.innerText = "Payment cancelled. Try again.";
+                        },
+                        onError: (error, paymentId) => {
+                            statusText.innerText = "Error: " + error.message;
+                        },
+                    });
+                };
+
             } catch (err) {
-                document.getElementById('status').innerText = "Auth failed. Open this in the Pi Browser!";
+                document.getElementById('status-text').innerText = "Error: Please open this inside the Pi Browser app!";
+                document.getElementById('status-text').style.color = "red";
             }
         }
 
-        // Step B: The Payment Function
-        document.getElementById('pay-button').onclick = async function() {
-            try {
-                const payment = await Pi.createPayment({
-                    amount: 1,
-                    memo: "Testing Step 10 for CampusLuv",
-                    metadata: { developer_approved: true }
-                }, {
-                    onReadyForServerApproval: (paymentId) => {
-                        // This tells the Pi Sandbox to auto-approve the test
-                        console.log("Requesting approval for:", paymentId);
-                    },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("Success! Transaction ID: " + txid);
-                    },
-                    onCancel: (paymentId) => { alert("Payment Cancelled"); },
-                    onError: (error, paymentId) => { alert("Error: " + error.message); },
-                });
-            } catch (err) {
-                alert("Payment Error: " + err.message);
-            }
-        };
-
-        // Start Auth on load
-        auth();
+        // Run the start function
+        startApp();
     </script>
 </body>
 </html>
