@@ -1,44 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLuv Admin</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
         Pi.init({ version: "2.0", sandbox: false });
-
-        async function handleChecklist() {
+        async function solveStage10() {
             try {
-                const auth = await Pi.authenticate(['username', 'payments'], (p) => {});
-                
-                const payment = await Pi.createPayment({
+                await Pi.authenticate(['username', 'payments'], (p) => {});
+                await Pi.createPayment({
                     amount: 0.1,
-                    memo: "Checklist Step 10",
-                    metadata: { internal_id: "checklist_001" }
+                    memo: "Final Step",
+                    metadata: { stage: "10" }
                 }, {
-                    onReadyForServerApproval: async (paymentId) => {
-                        // This is where we 'pretend' to be the backend.
-                        // We are telling the app to 'Acknowledge' the payment.
-                        console.log("Internal Approval for ID: " + paymentId);
+                    onReadyForServerApproval: (id) => { 
+                        // This is the 'Handshake'. 
+                        // On GitHub, this usually hangs, but try refreshing the wallet NOW.
+                        console.log("Payment ID:", id); 
                     },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("CHECKLIST VERIFIED! TXID: " + txid);
-                    },
-                    onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error) => { alert("Error: " + error.message); }
+                    onReadyForServerCompletion: (id, txid) => alert("Success!"),
+                    onCancel: (id) => console.log("Cancelled"),
+                    onError: (err) => alert("Error: " + err.message)
                 });
-            } catch (err) {
-                alert("Please open this in the Pi Browser.");
-            }
+            } catch (e) { alert(e.message); }
         }
     </script>
 </head>
-<body style="background:#002d5b; color:white; text-align:center; padding-top:100px; font-family:sans-serif;">
+<body style="background:#002d5b; color:white; text-align:center; padding-top:50px;">
     <h1>CAMPUSLUV</h1>
-    <p>Stage 10 Manual Bypass</p>
-    <button onclick="handleChecklist()" style="background:#E68A00; color:white; padding:20px 40px; border-radius:50px; border:none; font-weight:bold; cursor:pointer;">
-        COMPLETE CHECKLIST
-    </button>
+    <button onclick="solveStage10()" style="padding:20px; border-radius:10px;">FINISH CHECKLIST</button>
 </body>
 </html>
