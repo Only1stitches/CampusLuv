@@ -1,4 +1,45 @@
-<script src="https://sdk.minepi.com/pi-sdk.js"></script>
-<script>
-    Pi.init({ version: "2.0", sandbox: false });
-</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusLuv</title>
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        Pi.init({ version: "2.0", sandbox: false });
+    </script>
+    <style>
+        body {
+            background-color: #0047AB; /* This is the blue you wanted */
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .logo { width: 200px; }
+        .btn {
+            background-color: #E68A00;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to CampusLuv</h1>
+    <p>Students' World: Learn • Connect • Earn • Live</p>
+    
+    <button class="btn" onclick="alert('Payment Integration Coming Soon!')">Get Started</button>
+
+</body>
+</html>
