@@ -3,40 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLuv</title>
+    <title>CampusLuv - Students' World</title>
+    
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
+        // Initializing the SDK. 
+        // Note: Using sandbox: false because you are moving toward Mainnet/Production.
         Pi.init({ version: "2.0", sandbox: false });
     </script>
+
     <style>
+        /* Modern UI Styling for CampusLuv */
         body {
-            background-color: #0047AB; /* Your Blue Background */
+            background: radial-gradient(circle, #0056b3, #002d5b); /* Deep Blue Background */
             color: white;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            text-align: center;
         }
-        .tagline { font-size: 1.2rem; opacity: 0.9; }
-        .btn {
+
+        .container {
+            padding: 20px;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            /* Using a gradient for the text to match your logo colors */
+            background: linear-gradient(to right, #E68A00, #9b2d60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+
+        .btn-launch {
             background: linear-gradient(45deg, #E68A00, #FFB347);
             color: white;
-            padding: 12px 25px;
+            padding: 15px 40px;
             border: none;
-            border-radius: 30px;
+            border-radius: 50px;
+            font-size: 1.2rem;
             font-weight: bold;
-            margin-top: 20px;
-            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-launch:active {
+            transform: scale(0.95);
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            opacity: 0.6;
         }
     </style>
 </head>
 <body>
-    <h1>CAMPUSLUV</h1>
-    <p class="tagline">Students' World: Learn • Connect • Earn • Live</p>
-    <button class="btn">Launch App</button>
+
+    <div class="container">
+        <h1>CAMPUSLUV</h1>
+        <p>Students' World: Learn • Connect • Earn • Live</p>
+        
+        <button class="btn-launch" onclick="alert('Welcome to CampusLuv!')">
+            Enter Campus
+        </button>
+    </div>
+
+    <div class="footer">
+        Connected to Pi Network Subdomain: campusluv4713
+    </div>
+
 </body>
 </html>
