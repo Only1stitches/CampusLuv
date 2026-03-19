@@ -1,7 +1,7 @@
 export default async function handler(req, res) {
-  const { paymentId } = req.body;
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
   
-  // This is your specific API Key from the screenshot
+  const { paymentId } = req.body;
   const apiKey = "az4vrfje7tpvc2kmehv2hzrawklj7hlqruirzyarrlpmuhq6jzcspenwu8zoqlqq";
 
   try {
@@ -12,10 +12,9 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json'
       }
     });
-    
     const data = await response.json();
-    res.status(200).json(data);
+    return res.status(200).json(data);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
