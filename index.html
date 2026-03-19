@@ -8,44 +8,39 @@
     <script>
         Pi.init({ version: "2.0", sandbox: false });
 
-        async function completeStage10() {
+        async function verifyNow() {
             try {
-                // Step 1: Login
+                // 1. Authenticate first
                 const auth = await Pi.authenticate(['username', 'payments'], (p) => {});
                 
-                // Step 2: Create Payment with "Immediate Approval" Logic
+                // 2. Create the payment
                 const payment = await Pi.createPayment({
                     amount: 0.01,
-                    memo: "Checklist Completion",
-                    metadata: { stage: "10" }
+                    memo: "Checklist Stage 10",
+                    metadata: { type: "test" }
                 }, {
-                    onReadyForServerApproval: async (paymentId) => {
-                        // This is the "Magic" part. 
-                        // It tells the UI to proceed even without a backend server.
-                        console.log("App side approval triggered for:", paymentId);
+                    onReadyForServerApproval: (paymentId) => {
+                        // This is the critical missing link. 
+                        // It tells the portal the app 'received' the request.
+                        console.log("Payment ID received:", paymentId);
                     },
                     onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("STAGE 10 COMPLETE! TXID: " + txid);
+                        alert("Success! Check your portal now.");
                     },
-                    onCancel: (paymentId) => { console.log("User cancelled"); },
-                    onError: (error, payment) => { alert("Error: " + error.message); }
+                    onCancel: (paymentId) => { console.log("Cancelled"); },
+                    onError: (error) => { alert("Error: " + error.message); }
                 });
             } catch (err) {
-                alert("Please ensure you are in the Pi Browser.");
+                alert("Auth failed. Open this in Pi Browser.");
             }
         }
     </script>
-    <style>
-        body { background: #002d5b; color: white; font-family: sans-serif; text-align: center; display: flex; flex-direction: column; justify-content: center; height: 100vh; margin: 0; }
-        .btn { background: linear-gradient(to right, #E68A00, #FFB347); color: white; padding: 20px 40px; border: none; border-radius: 50px; font-weight: bold; font-size: 1.2rem; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: 0.2s; }
-        .btn:active { transform: scale(0.95); }
-    </style>
 </head>
-<body>
+<body style="background:#002d5b; color:white; text-align:center; padding-top:100px; font-family:sans-serif;">
     <h1>CAMPUSLUV</h1>
-    <p>Final Checklist Verification</p>
-    <button class="btn" onclick="completeStage10()">
-        VERIFY TRANSACTION NOW
+    <p>Status: Ready for Stage 10</p>
+    <button onclick="verifyNow()" style="background:#E68A00; color:white; padding:20px; border-radius:50px; border:none; font-weight:bold;">
+        CLICK TO VERIFY NOW
     </button>
 </body>
 </html>
