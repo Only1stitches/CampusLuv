@@ -1,49 +1,41 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CampusLuv</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
     <script>
         Pi.init({ version: "2.0", sandbox: false });
-
-        async function completeStage10() {
+        async function finishChecklist() {
             try {
                 await Pi.authenticate(['username', 'payments'], (p) => {});
-                
                 await Pi.createPayment({
                     amount: 0.1,
-                    memo: "Final Checklist Step",
+                    memo: "Final Stage 10",
                     metadata: { stage: "10" }
                 }, {
                     onReadyForServerApproval: async (paymentId) => {
-                        // This calls your /api/approve.js file automatically
                         await fetch('/api/approve', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ paymentId })
                         });
                     },
-                    onReadyForServerCompletion: (paymentId, txid) => {
-                        alert("STAGE 10 VERIFIED! TXID: " + txid);
+                    onReadyForServerCompletion: async (paymentId, txid) => {
+                        await fetch('/api/complete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId, txid })
+                        });
+                        alert("CHECKLIST SUCCESSFUL!");
                     },
-                    onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error) => { alert("Error: " + error.message); }
+                    onCancel: (id) => console.log("Cancelled"),
+                    onError: (err) => alert("Error: " + err.message)
                 });
-            } catch (err) {
-                alert("Please open this in the Pi Browser.");
-            }
+            } catch (e) { alert(e.message); }
         }
     </script>
-    <style>
-        body { background: #002d5b; color: white; font-family: sans-serif; text-align: center; padding-top: 100px; }
-        .btn { background: #E68A00; color: white; padding: 20px 40px; border: none; border-radius: 50px; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
-    </style>
 </head>
-<body>
+<body style="background:#002d5b; color:white; text-align:center; padding-top:100px;">
     <h1>CAMPUSLUV</h1>
-    <p>Click below to trigger the wallet passphrase prompt</p>
-    <button class="btn" onclick="completeStage10()">VERIFY NOW</button>
+    <button onclick="finishChecklist()" style="padding:20px; border-radius:50px; background:#E68A00; color:white; font-weight:bold; border:none; cursor:pointer;">VERIFY FINAL STEP</button>
 </body>
 </html>
