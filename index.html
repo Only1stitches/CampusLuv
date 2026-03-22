@@ -29,7 +29,6 @@
         Pi.init({ version: "2.0", sandbox: false });
 
         async function onIncompletePaymentFound(payment) {
-            // This function automatically tells the Pi Network to finish the old payment
             try {
                 await fetch('/api/complete', {
                     method: 'POST',
@@ -38,7 +37,7 @@
                 });
                 window.location.reload(true);
             } catch (e) {
-                console.log("Stuck payment found; cleaning up...");
+                console.log("Resolving background payment...");
             }
         };
 
@@ -67,12 +66,12 @@
                     onReadyForServerCompletion: (paymentId, txid) => {
                         fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId, txid }) });
                     },
-                    onCancel: (paymentId) => { console.log("Cancelled"); },
-                    onError: (error) => { console.error("Error", error); }
+                    onCancel: (paymentId) => { console.log("Payment Cancelled"); },
+                    onError: (error) => { console.error("Payment Error", error); }
                 };
                 await Pi.createPayment(paymentData, callbacks);
             } catch (err) {
-                console.error("Payment failed", err);
+                console.error("Critical failure", err);
             }
         }
 
