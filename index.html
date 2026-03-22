@@ -29,29 +29,26 @@
         Pi.init({ version: "2.0", sandbox: false });
 
         async function onIncompletePaymentFound(payment) {
-            // Silently clear any ghost payments in the background
             try {
                 await fetch('/api/complete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction.txid })
                 });
-                // Hard refresh to clear the UI state
                 window.location.reload(true);
             } catch (e) {
-                console.error("Auto-cleanup failed", e);
+                console.log("Cleanup background task active.");
             }
         };
 
         async function auth() {
             try {
-                // Pass the cleanup function to the authenticate call
                 const auth = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
                 document.getElementById('status').innerHTML = `Welcome, <strong>${auth.user.username}</strong>!`;
                 document.getElementById('login-btn').style.display = 'none';
                 document.getElementById('pay-btn').style.display = 'block';
             } catch (err) {
-                document.getElementById('status').innerText = "Login failed. Please refresh.";
+                document.getElementById('status').innerText = "Login failed. Please refresh the page.";
             }
         }
 
@@ -61,8 +58,7 @@
                     amount: 1.0,
                     memo: "CampusLuv Subscription",
                     metadata: { type: "subscription" }
-                };
-
+                }
                 const callbacks = {
                     onReadyForServerApproval: (paymentId) => {
                         fetch('/api/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId }) });
@@ -70,13 +66,12 @@
                     onReadyForServerCompletion: (paymentId, txid) => {
                         fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId, txid }) });
                     },
-                    onCancel: (paymentId) => { console.log("Payment Cancelled"); },
-                    onError: (error) => { console.error("Payment Error", error); }
+                    onCancel: (paymentId) => { console.log("User cancelled payment."); },
+                    onError: (error) => { console.error("Payment error occurred.", error); }
                 };
-
                 await Pi.createPayment(paymentData, callbacks);
             } catch (err) {
-                console.error("Payment initiation failed", err);
+                console.error("Critical payment failure.", err);
             }
         }
 
