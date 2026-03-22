@@ -1,10 +1,9 @@
-const PI_API_KEY = process.env.PI_API_KEY;
-
 export default async function handler(req, res) {
-  try {
-    const { paymentId } = req.body;
-    res.status(200).json({ message: "Approve endpoint active", paymentId });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  const { paymentId } = req.body;
+  const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
+    method: 'POST',
+    headers: { 'Authorization': `Key ${process.env.PI_API_KEY}` }
+  });
+  const data = await response.json();
+  res.status(200).json(data);
 }
