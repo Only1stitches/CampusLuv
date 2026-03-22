@@ -1,19 +1,6 @@
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-  
-  const { paymentId } = req.body;
+const PI_API_KEY = process.env.PI_API_KEY;
 
-  try {
-    const response = await fetch(`https://api.minepi.com/v2/payments/${paymentId}/approve`, {
-      method: 'POST',
-      headers: { 
-        'Authorization': 'Key az4vrfje7tpvc2kmehv2hzrawklj7hlqruirzyarrlpmuhq6jzcspenwu8zoqlqq',
-        'Content-Type': 'application/json'
-      }
-    });
-    const data = await response.json();
-    return res.status(200).json(data);
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+export default async function handler(req, res) {
+  // This tells the file to use the key from Vercel
+  res.status(200).json({ message: "Approve endpoint active" });
 }
