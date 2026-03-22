@@ -29,20 +29,26 @@
         Pi.init({ version: "2.0", sandbox: false });
 
         async function onIncompletePaymentFound(payment) {
+            // This is the CRITICAL fix for the "Pending Payment" error
             try {
                 await fetch('/api/complete', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction.txid })
+                    body: JSON.stringify({ 
+                        paymentId: payment.identifier, 
+                        txid: payment.transaction.txid 
+                    })
                 });
+                // Force a reload to clear the error message from the screen
                 window.location.reload(true);
             } catch (e) {
-                console.log("Resolving background payment...");
+                console.log("Attempting to resolve pending payment...");
             }
         };
 
         async function auth() {
             try {
+                // We pass the cleanup function directly into the login call
                 const auth = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
                 document.getElementById('status').innerHTML = `Welcome, <strong>${auth.user.username}</strong>!`;
                 document.getElementById('login-btn').style.display = 'none';
@@ -66,12 +72,12 @@
                     onReadyForServerCompletion: (paymentId, txid) => {
                         fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId, txid }) });
                     },
-                    onCancel: (paymentId) => { console.log("Payment Cancelled"); },
-                    onError: (error) => { console.error("Payment Error", error); }
+                    onCancel: (paymentId) => { console.log("Cancelled"); },
+                    onError: (error) => { console.error("Error", error); }
                 };
                 await Pi.createPayment(paymentData, callbacks);
             } catch (err) {
-                console.error("Critical failure", err);
+                console.error("Payment failed", err);
             }
         }
 
