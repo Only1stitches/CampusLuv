@@ -14,7 +14,6 @@
         #login-btn { background: #673ab7; color: white; }
         #pay-btn { background: #ff9800; color: white; display: none; }
         button:hover { opacity: 0.9; transform: translateY(-2px); }
-        button:active { transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -30,61 +29,60 @@
         const Pi = window.Pi;
         Pi.init({ version: "2.0", sandbox: false });
 
-        // STEP 1: THE REPAIR FUNCTION
-        // This runs automatically if the Pi Network finds your old "Pending" payment
+        // THE DEEP RESET FIX
         async function onIncompletePaymentFound(payment) {
             console.log("Stuck payment found. Clearing now...");
             document.getElementById('status').innerText = "Clearing pending transaction...";
             
-            await fetch('/api/complete', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    paymentId: payment.identifier, 
-                    txid: payment.transaction.txid 
-                })
-            });
-            
-            document.getElementById('status').innerText = "Pending payment cleared! Please refresh.";
+            try {
+                const response = await fetch('/api/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        paymentId: payment.identifier, 
+                        txid: payment.transaction.txid 
+                    })
+                });
+
+                if (response.ok) {
+                    document.getElementById('status').innerText = "Success! Resetting app...";
+                    // Force a hard reload after 2 seconds to clear the ghost popup
+                    setTimeout(() => {
+                        window.location.reload(true);
+                    }, 2000); 
+                }
+            } catch (err) {
+                console.error("Cleanup failed:", err);
+                document.getElementById('status').innerText = "Cleanup failed. Check Vercel logs.";
+            }
         };
 
-        // STEP 2: LOGIN LOGIC
         async function auth() {
             try {
-                // We pass the "Repair Function" into the authenticate call here
                 const auth = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
                 document.getElementById('status').innerHTML = `Welcome, <strong>${auth.user.username}</strong>!`;
                 document.getElementById('login-btn').style.display = 'none';
                 document.getElementById('pay-btn').style.display = 'block';
             } catch (err) {
                 console.error("Auth failed:", err);
-                document.getElementById('status').innerText = "Login failed. Try again in Pi Browser.";
+                document.getElementById('status').innerText = "Login failed. Re-open Pi Browser.";
             }
         }
 
-        // STEP 3: NEW PAYMENT LOGIC
         async function createPayment() {
             try {
                 const paymentData = {
                     amount: 1.0,
-                    memo: "CampusLuv Premium Subscription",
-                    metadata: { type: "subscription_v1" }
+                    memo: "CampusLuv Subscription",
+                    metadata: { type: "subscription" }
                 };
 
                 const callbacks = {
                     onReadyForServerApproval: (paymentId) => {
-                        fetch('/api/approve', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paymentId })
-                        });
+                        fetch('/api/approve', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId }) });
                     },
                     onReadyForServerCompletion: (paymentId, txid) => {
-                        fetch('/api/complete', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ paymentId, txid })
-                        });
+                        fetch('/api/complete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ paymentId, txid }) });
                     },
                     onCancel: (paymentId) => { console.log("Cancelled"); },
                     onError: (error) => { console.error("Payment error:", error); }
