@@ -5,44 +5,78 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CampusLuv</title>
     <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
+        button { padding: 12px 24px; font-size: 16px; cursor: pointer; border-radius: 8px; border: none; }
+        #login-btn { background: #673ab7; color: white; }
+        #pay-btn { background: #ff9800; color: white; display: none; margin-top: 20px; }
+    </style>
 </head>
 <body>
     <h1>Welcome to CampusLuv</h1>
     <div id="user-info"></div>
-    <button id="login-btn" style="padding: 10px 20px; background: #673ab7; color: white; border: none; border-radius: 5px;">Login with Pi</button>
+    
+    <button id="login-btn">Login with Pi</button>
+    <button id="pay-btn">Pay 1 Pi to CampusLuv</button>
 
     <script>
-        // Initialize Pi SDK
         const Pi = window.Pi;
         Pi.init({ version: "2.0", sandbox: false });
 
-        // Function to handle payments that got stuck before
         async function onIncompletePaymentFound(payment) {
-            console.log("Found incomplete payment:", payment.identifier);
             await fetch('/api/complete', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    paymentId: payment.identifier, 
-                    txid: payment.transaction.txid 
-                })
+                body: JSON.stringify({ paymentId: payment.identifier, txid: payment.transaction.txid })
             });
         };
 
-        // Login Function
         async function auth() {
             try {
-                const scopes = ['payments', 'username'];
-                const auth = await Pi.authenticate(scopes, onIncompletePaymentFound);
-                document.getElementById('user-info').innerHTML = `Hi, ${auth.user.username}!`;
+                const auth = await Pi.authenticate(['payments', 'username'], onIncompletePaymentFound);
+                document.getElementById('user-info').innerHTML = `<h3>Hi, ${auth.user.username}!</h3>`;
                 document.getElementById('login-btn').style.display = 'none';
-                console.log("Authenticated:", auth);
+                document.getElementById('pay-btn').style.display = 'inline-block';
             } catch (err) {
-                console.error("Auth failed:", err);
+                alert("Auth failed: " + err.message);
+            }
+        }
+
+        async function createPayment() {
+            try {
+                const paymentData = {
+                    amount: 1.0,
+                    memo: "Test Payment for CampusLuv",
+                    metadata: { test: "data" }
+                };
+
+                const callbacks = {
+                    onReadyForServerApproval: (paymentId) => {
+                        fetch('/api/approve', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId })
+                        });
+                    },
+                    onReadyForServerCompletion: (paymentId, txid) => {
+                        fetch('/api/complete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ paymentId, txid })
+                        });
+                    },
+                    onCancel: (paymentId) => console.log("Cancelled", paymentId),
+                    onError: (error, payment) => console.error("Error", error)
+                };
+
+                await Pi.createPayment(paymentData, callbacks);
+            } catch (err) {
+                console.error(err);
             }
         }
 
         document.getElementById('login-btn').addEventListener('click', auth);
+        document.getElementById('pay-btn').addEventListener('click', createPayment);
     </script>
 </body>
 </html>
